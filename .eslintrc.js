@@ -7,6 +7,7 @@ module.exports = {
 		'eslint:recommended',
 		'plugin:@typescript-eslint/recommended',
 		'plugin:react/recommended',
+		'plugin:react-hooks/recommended',
 		'plugin:prettier/recommended'
 	],
 	settings: {
@@ -30,7 +31,7 @@ module.exports = {
 		ecmaVersion: 'latest',
 		sourceType: 'module'
 	},
-	plugins: ['@typescript-eslint', 'react'],
+	plugins: ['@typescript-eslint', 'react', 'react-hooks'],
 	rules: {
 		// eslint（https://eslint.bootcss.com/docs/rules/）
 		'no-var': 'error', // 要求使用 let 或 const 而不是 var
@@ -49,6 +50,8 @@ module.exports = {
 		'@typescript-eslint/semi': 'off',
 
 		// react
-		'react/react-in-jsx-scope': 'off'
+		'react/react-in-jsx-scope': 'off',
+		'react-hooks/rules-of-hooks': 'error',
+		'react-hooks/exhaustive-deps': 'warn'
 	}
 }

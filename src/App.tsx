@@ -6,10 +6,15 @@
  * @FilePath: /react-rsbuild-tpl/src/App.tsx
  */
 import { Button } from 'antd'
-
-var s = '321312'
+import { useEffect, useState } from 'react'
 
 const App = () => {
+	const [show] = useState(false)
+
+	useEffect(() => {
+		console.log('show: ', show)
+	}, [show])
+
 	return (
 		<div className="content">
 			<Button type="primary">Button</Button>
