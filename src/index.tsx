@@ -1,18 +1,20 @@
-/*
- * @Author: lewinlu@chatlabs.com
- * @Date: 2024-01-04 13:36:34
- * @LastEditors: lewinlu@chatlabs.com
- * @LastEditTime: 2024-01-04 14:02:47
- * @FilePath: /react-rsbuild-tpl/src/index.tsx
- */
 import React from 'react'
 import ReactDOM from 'react-dom/client'
+import { Provider } from 'react-redux'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import store from '@/store'
 import App from './App'
-import 'antd/dist/reset.css'
+import '@/assets/styles/index.css'
 
+const queryClient = new QueryClient()
 const root = ReactDOM.createRoot(document.getElementById('root')!)
+
 root.render(
 	<React.StrictMode>
-		<App />
+		<QueryClientProvider client={queryClient}>
+			<Provider store={store}>
+				<App />
+			</Provider>
+		</QueryClientProvider>
 	</React.StrictMode>
 )

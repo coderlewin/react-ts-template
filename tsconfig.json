@@ -6,6 +6,7 @@
 		"jsx": "react-jsx",
 		"strict": true,
 		"skipLibCheck": true,
+		"importHelpers": true,
 		"isolatedModules": true,
 		"resolveJsonModule": true,
 		"moduleResolution": "bundler",
@@ -14,6 +15,6 @@
 			"@/*": ["./src/*"]
 		}
 	},
-	"include": ["src"],
+	"include": ["src", "./types/typing.d.ts"],
 	"exclude": ["node_modules"]
 }

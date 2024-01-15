@@ -2,3 +2,8 @@ dist
 node_modules
 
 
+openapi.config.js
+.prettierrc.js
+.commitlintrc.js
+
+scripts

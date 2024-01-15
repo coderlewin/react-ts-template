@@ -2,7 +2,7 @@
  * @Author: lewinlu@chatlabs.com
  * @Date: 2024-01-04 13:36:34
  * @LastEditors: lewinlu@chatlabs.com
- * @LastEditTime: 2024-01-04 14:37:15
+ * @LastEditTime: 2024-01-12 23:30:47
  * @FilePath: /react-rsbuild-tpl/rsbuild.config.ts
  */
 import { defineConfig, mergeRsbuildConfig } from '@rsbuild/core'
@@ -41,7 +41,13 @@ const devConfig = mergeRsbuildConfig(
 		},
 		server: {
 			port: 5888,
-			proxy: {}
+			proxy: {
+				'/api': {
+					target: 'http://localhost:8080',
+					changeOrigin: true,
+					pathRewrite: { '^/api': '' }
+				}
+			}
 		},
 		dev: {}
 	})

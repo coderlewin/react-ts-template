@@ -1,3 +1,10 @@
+/*
+ * @Author: lewinlu@chatlabs.com
+ * @Date: 2024-01-12 15:07:11
+ * @LastEditors: lewinlu@chatlabs.com
+ * @LastEditTime: 2024-01-12 23:12:49
+ * @FilePath: /react-rsbuild-tpl/.eslintrc.js
+ */
 module.exports = {
 	env: {
 		browser: true,
@@ -8,6 +15,7 @@ module.exports = {
 		'plugin:@typescript-eslint/recommended',
 		'plugin:react/recommended',
 		'plugin:react-hooks/recommended',
+		'plugin:@tanstack/eslint-plugin-query/recommended',
 		'plugin:prettier/recommended'
 	],
 	settings: {
@@ -31,7 +39,7 @@ module.exports = {
 		ecmaVersion: 'latest',
 		sourceType: 'module'
 	},
-	plugins: ['@typescript-eslint', 'react', 'react-hooks'],
+	plugins: ['@typescript-eslint', 'react', 'react-hooks', '@tanstack/query'],
 	rules: {
 		// eslint（https://eslint.bootcss.com/docs/rules/）
 		'no-var': 'error', // 要求使用 let 或 const 而不是 var
@@ -51,7 +59,13 @@ module.exports = {
 
 		// react
 		'react/react-in-jsx-scope': 'off',
+		'react/display-name': 'off',
 		'react-hooks/rules-of-hooks': 'error',
-		'react-hooks/exhaustive-deps': 'warn'
+		'react-hooks/exhaustive-deps': 'warn',
+
+		// react-query
+		'@tanstack/query/exhaustive-deps': 'error',
+		'@tanstack/query/no-rest-destructuring': 'warn',
+		'@tanstack/query/stable-query-client': 'error'
 	}
 }
