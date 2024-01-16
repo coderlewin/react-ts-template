@@ -16,7 +16,6 @@ http.interceptors.request.use(
 		if (accessToken) {
 			config.headers.setAuthorization(`Bearer ${accessToken}`, true)
 		}
-
 		return config
 	},
 	(err) => Promise.reject(err)
@@ -38,11 +37,11 @@ http.interceptors.response.use(
 		}
 		return response
 	},
-	(err) => {
+	async (err) => {
 		const statusCode = err.response.status
+
+		const refreshToken = local.getRefreshToken()
 		if (statusCode === 401) {
-			console.log('======== RefreshToken ========')
-			const refreshToken = local.getRefreshToken()
 			if (!refreshToken) {
 				console.log('没有 refresh token 跳转至登录页面')
 				console.log('==============================')
@@ -61,7 +60,6 @@ http.interceptors.response.use(
 						console.log('==============================')
 
 						const token = res.headers['x-jwt-token']
-						local.setAccessToken(token)
 						err.config.headers['Authorization'] = 'Bearer ' + token
 						return axios(err.config)
 					})
@@ -77,7 +75,6 @@ http.interceptors.response.use(
 					})
 			}
 		}
-
 		return Promise.reject(err)
 	}
 )
