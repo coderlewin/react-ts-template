@@ -36,7 +36,7 @@ const devConfig = mergeRsbuildConfig(
 	defineConfig({
 		output: {
 			sourceMap: {
-				js: 'eval-cheap-module-source-map'
+				js: 'inline-cheap-source-map'
 			}
 		},
 		server: {

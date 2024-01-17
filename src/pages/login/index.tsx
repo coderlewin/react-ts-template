@@ -28,7 +28,7 @@ const Page: FC = memo(() => {
 
 	const handleFinish = async (formData: any) => {
 		try {
-			await luapi.postLogin({
+			await luapi.yonghumokuai.postUserLogin({
 				account: formData.username,
 				password: formData.password
 			})

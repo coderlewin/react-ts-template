@@ -60,6 +60,7 @@ http.interceptors.response.use(
 						console.log('==============================')
 
 						const token = res.headers['x-jwt-token']
+						local.setAccessToken(token)
 						err.config.headers['Authorization'] = 'Bearer ' + token
 						return axios(err.config)
 					})

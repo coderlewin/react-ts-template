@@ -1,5 +1,12 @@
+// @ts-ignore
+/* eslint-disable */
 // API 更新时间：
 // API 唯一标识：
-import * as luapi from './yonghumokuai'
+import * as jiekoumokuai from './jiekoumokuai';
+import * as yonghumokuai from './yonghumokuai';
 
-export default luapi
+
+export default {
+  jiekoumokuai,
+  yonghumokuai,
+};
