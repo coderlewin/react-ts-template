@@ -1,16 +1,10 @@
-/*
- * @Author: lewinlu@chatlabs.com
- * @Date: 2024-01-13 15:28:54
- * @LastEditors: lewinlu@chatlabs.com
- * @LastEditTime: 2024-01-13 15:38:26
- * @FilePath: /react-rsbuild-tpl/src/pages/interface/index.tsx
- */
 import { useThemeToken } from '@/hooks'
 import {
 	ActionType,
 	DrawerForm,
 	PageContainer,
 	ProColumns,
+	ProForm,
 	ProFormDependency,
 	ProFormDigit,
 	ProFormGroup,
@@ -21,98 +15,133 @@ import {
 	ProTable,
 	TableDropdown
 } from '@ant-design/pro-components'
-import { Button, Image, Typography } from 'antd'
-import { useRef } from 'react'
+import { Button, message, Modal, Typography } from 'antd'
+import { useCallback, useMemo, useRef } from 'react'
 import luapi from '@/services/luapi'
 import { useBoolean } from 'ahooks'
 
-const columns: ProColumns<API.InterfaceInfoVO>[] = [
-	{
-		dataIndex: 'id',
-		valueType: 'indexBorder',
-		width: 48,
-		hideInSearch: true
-	},
-	{
-		title: '接口名称',
-		dataIndex: 'name'
-	},
-	{
-		title: '描述',
-		dataIndex: 'description',
-		hideInSearch: true
-	},
-	{
-		title: '请求方法',
-		dataIndex: 'method',
-		valueType: 'select',
-		valueEnum: {
-			POST: {
-				text: 'POST'
-			},
-			GET: {
-				text: 'GET'
+const getColumns = (fn: (key: string, record: API.InterfaceInfoVO) => void) => {
+	const columns: ProColumns<API.InterfaceInfoVO>[] = [
+		{
+			dataIndex: 'id',
+			valueType: 'indexBorder',
+			width: 48,
+			hideInSearch: true
+		},
+		{
+			title: '接口名称',
+			dataIndex: 'name'
+		},
+		{
+			title: '描述',
+			dataIndex: 'description',
+			hideInSearch: true
+		},
+		{
+			title: '请求方法',
+			dataIndex: 'method',
+			valueType: 'select',
+			valueEnum: {
+				POST: {
+					text: 'POST'
+				},
+				GET: {
+					text: 'GET'
+				}
 			}
+		},
+		{
+			title: '请求地址',
+			dataIndex: 'url',
+			copyable: true,
+			hideInSearch: true
+		},
+		{
+			title: '调用方法',
+			dataIndex: 'call_name',
+			copyable: true
+		},
+		{
+			title: '创建时间',
+			dataIndex: 'create_time',
+			hideInForm: true,
+			hideInSearch: true,
+			render: (_, record) => {
+				return (
+					<Typography.Text>{new Date(record.create_time! * 1000).toLocaleString()}</Typography.Text>
+				)
+			}
+		},
+		{
+			title: '更新时间',
+			dataIndex: 'update_time',
+			hideInForm: true,
+			hideInSearch: true,
+			render: (_, record) => {
+				return (
+					<Typography.Text>{new Date(record.update_time! * 1000).toLocaleString()}</Typography.Text>
+				)
+			}
+		},
+		{
+			title: '操作',
+			valueType: 'option',
+			render: (text, record) => [
+				<TableDropdown
+					key="actionGroup"
+					onSelect={(key) => fn(key, record)}
+					menus={[
+						{ key: 'editable', name: '编辑' },
+						{ key: 'delete', name: '删除', danger: true }
+					]}
+				/>
+			]
 		}
-	},
-	{
-		title: '请求地址',
-		dataIndex: 'url',
-		copyable: true,
-		hideInSearch: true
-	},
-	{
-		title: '调用方法',
-		dataIndex: 'call_name',
-		copyable: true
-	},
-	{
-		title: '创建时间',
-		dataIndex: 'create_time',
-		hideInForm: true,
-		hideInSearch: true,
-		render: (_, record) => {
-			return (
-				<Typography.Text>{new Date(record.create_time! * 1000).toLocaleString()}</Typography.Text>
-			)
-		}
-	},
-	{
-		title: '更新时间',
-		dataIndex: 'update_time',
-		hideInForm: true,
-		hideInSearch: true,
-		render: (_, record) => {
-			return (
-				<Typography.Text>{new Date(record.update_time! * 1000).toLocaleString()}</Typography.Text>
-			)
-		}
-	},
-	{
-		title: '操作',
-		valueType: 'option',
-		render: (text, record, _, action) => [
-			<a key="editable" onClick={() => {}}>
-				编辑
-			</a>,
-			<a target="_blank" rel="noopener noreferrer" key="view">
-				查看
-			</a>,
-			<TableDropdown
-				key="actionGroup"
-				onSelect={() => action?.reload()}
-				menus={[
-					{ key: 'copy', name: '复制' },
-					{ key: 'delete', name: '删除' }
-				]}
-			/>
-		]
-	}
-]
+	]
+	return columns
+}
+
 const InterfacePage = () => {
 	const token = useThemeToken()
 	const actionRef = useRef<ActionType>()
 	const [open, { setTrue: show, setFalse: close }] = useBoolean(false)
+	const [form] = ProForm.useForm()
+	const currentInterfaceInfo = useRef<API.InterfaceInfoVO | null>(null)
+	const [modal, contextHolder] = Modal.useModal()
+
+	const tableCallback = useCallback(
+		async (type: string, record: API.InterfaceInfoVO) => {
+			switch (type) {
+				case 'editable': {
+					currentInterfaceInfo.current = record
+					// eslint-disable-next-line prefer-const
+					let { request_header, request_params, request_params_example, ...rest } = record
+					request_header = JSON.parse(request_header ?? '[]')
+					request_params = JSON.parse(request_params ?? '[]')
+					request_params_example = JSON.parse(request_params_example ?? '[]')
+					form.setFieldsValue({ request_header, request_params, request_params_example, ...rest })
+					show()
+					break
+				}
+				case 'delete': {
+					modal.confirm({
+						title: '温馨提示',
+						content: '是否删除该接口？',
+						onOk() {
+							luapi.jiekoumokuai.deleteInterfaceInfoId({ id: record.id! })
+							actionRef.current?.reloadAndRest?.()
+						}
+					})
+					break
+				}
+			}
+		},
+		[form, show, modal]
+	)
+
+	const columns = useMemo(() => {
+		return getColumns(tableCallback)
+	}, [tableCallback])
 
 	return (
 		<PageContainer
@@ -123,6 +152,7 @@ const InterfacePage = () => {
 					新增
 				</Button>
 			]}>
+			{contextHolder}
 			<ProTable<API.UserVO>
 				cardBordered
 				columns={columns}
@@ -148,27 +178,63 @@ const InterfacePage = () => {
 				}}
 			/>
 			<DrawerForm
+				title={currentInterfaceInfo.current ? '修改接口' : '新增接口'}
 				open={open}
 				drawerProps={{
+					onClose: () => {
+						currentInterfaceInfo.current = null
+						close()
+					},
+					maskClosable: false,
 					destroyOnClose: true,
-					onClose: close,
-					maskClosable: false
+					forceRender: true
 				}}
+				form={form}
+				autoFocusFirstInput
 				onFinish={async (params) => {
-					console.log('finsh', params)
-					// eslint-disable-next-line prefer-const
-					let { request_header, request_params, request_params_example, ...restParams } = params
+					let {
+						request_header = [],
+						request_params = [],
+						request_params_example = [],
+						// eslint-disable-next-line prefer-const
+						...restParams
+					} = params
 					request_header = JSON.stringify(request_header)
 					request_params = JSON.stringify(request_params)
 					request_params_example = JSON.stringify(request_params_example)
+					// 修改接口
+					if (currentInterfaceInfo.current) {
+						const res = await luapi.jiekoumokuai.putInterfaceInfo({
+							id: currentInterfaceInfo.current.id,
+							request_params,
+							request_header,
+							request_params_example,
+							...restParams
+						})
+						if (res.data.code === 0) {
+							message.success('修改接口成功')
+							currentInterfaceInfo.current = null
+							close()
+							actionRef.current?.reloadAndRest?.()
+							return true
+						}
+						return false
+					}
 
+					// 新增接口
 					const res = await luapi.jiekoumokuai.postInterfaceInfo({
 						request_params,
 						request_header,
 						request_params_example,
 						...restParams
 					})
-					return res.data.data > 0
+					if (res.data.code === 0) {
+						message.success('新增接口成功')
+						close()
+						actionRef.current?.reloadAndRest?.()
+						return true
+					}
+					return false
 				}}>
 				<ProFormText name={'name'} label={'接口名称'} rules={[{ required: true }]} />
 				<ProFormTextArea name={'description'} label={'描述'} rules={[{ required: true }]} />
@@ -201,11 +267,12 @@ const InterfacePage = () => {
 						/>
 					</ProFormGroup>
 				</ProFormList>
-				<ProFormDependency name={['request_params']}>
-					{({ request_params }, form) => {
-						const val = request_params?.map?.((item: any) => ({
+				<ProFormDependency name={['request_params', 'request_params_example']}>
+					{(params, form) => {
+						const { request_params, request_params_example } = params
+						const val = request_params?.map?.((item: any, index: number) => ({
 							field: item.field,
-							value: undefined
+							value: request_params_example?.[index]?.value ?? undefined
 						}))
 						form.setFieldValue('request_params_example', val)
 						return (
